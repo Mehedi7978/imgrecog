@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        #uploadedImage {
+            max-width: 300px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        #predictions {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .prediction {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <center>
+    <h1>AI Image Recognition</h1>
+    <p>Upload an image to identify objects in it:</p>
+
+    <input type="file" id="fileInput" accept="image/*">
+    <br>
+    <img id="uploadedImage" alt="Uploaded Preview">
+    <div id="predictions"></div></center>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script >
+        // Function to identify objects in the uploaded image
+async function identifyImage() {
+    const img = document.getElementById("uploadedImage");
+    const predictionsDiv = document.getElementById("predictions");
+    predictionsDiv.innerHTML = "Loading model and analyzing the image...";
+
+    try {
+        // Load the MobileNet model
+        const model = await mobilenet.load();
+
+        // Classify the image
+        const predictions = await model.classify(img);
+
+        // Display predictions
+        predictionsDiv.innerHTML = "<h3>Predictions:</h3>";
+        predictions.forEach((prediction) => {
+            const result = document.createElement("div");
+            result.className = "prediction";
+            result.textContent = `${prediction.className} - ${(prediction.probability * 100).toFixed(2)}% confidence`;
+            predictionsDiv.appendChild(result);
+        });
+    } catch (error) {
+        predictionsDiv.innerHTML = "Error analyzing the image. Please try again.";
+        console.error(error);
+    }
+}
+
+// Event listener for image upload
+document.getElementById("fileInput").addEventListener("change", function (event) {
+    const file = event.target.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const uploadedImage = document.getElementById("uploadedImage");
+            uploadedImage.src = e.target.result;
+
+            // Analyze the image after it has been fully loaded
+            uploadedImage.onload = () => identifyImage();
+        };
+
+        reader.readAsDataURL(file);
+    }
+});
+
+
+
+    </script>
+</body>
+</html>
